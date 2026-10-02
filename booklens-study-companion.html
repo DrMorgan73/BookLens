@@ -111,6 +111,8 @@ mark.hl-blue{background:rgba(100,170,255,.42)}
 .fc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-top:14px}
 .fc-card{background:var(--surface);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);overflow:hidden;cursor:pointer;min-height:150px;display:flex;flex-direction:column}
 .fc-card-face{padding:16px;flex:1;display:grid;place-items:center;text-align:center;font-size:.98rem}
+.fc-front{background:#EDEBFA}
+.fc-back{background:#FFF3D9}
 .fc-tag{font-size:.68rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:8px}
 .fc-card.flipped .fc-front{display:none}
 .fc-card:not(.flipped) .fc-back{display:none}
@@ -118,7 +120,8 @@ mark.hl-blue{background:rgba(100,170,255,.42)}
 .fc-card-actions button{flex:1;min-height:40px}
 .fc-empty{color:var(--muted);text-align:center;padding:26px 12px;border:1px dashed var(--line);border-radius:13px;margin-top:14px}
 .fc-study{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;margin-top:14px;box-shadow:var(--shadow);text-align:center}
-.fc-study-card{min-height:190px;display:grid;place-items:center;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:24px;margin:14px 0;cursor:pointer;font-size:1.08rem}
+.fc-study-card{min-height:190px;display:grid;place-items:center;background:#EDEBFA;border:1px solid var(--line);border-radius:12px;padding:24px;margin:14px 0;cursor:pointer;font-size:1.08rem}
+.fc-study-card.flipped{background:#FFF3D9}
 .fc-study-nav{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap}
 .fc-study-count{color:var(--muted);font-weight:700}
 .fc-from-hl{flex:none;border:1px solid var(--line);background:var(--surface);color:var(--indigo);border-radius:8px;font-size:.74rem;font-weight:800;padding:7px 9px;cursor:pointer;min-height:36px;white-space:nowrap}
@@ -360,7 +363,7 @@ function fcStudyExit(){var box=el('fcStudy');if(box)box.classList.add('hidden')}
 function fcPdf(){var list=fcList();if(!list.length){toast('No cards to download yet');return}
 var bookName='';try{var bn=el('bookName');if(bn&&bn.textContent)bookName=bn.textContent.trim()}catch(e){}
 var datestr='';try{datestr=new Date().toLocaleDateString()}catch(e){}
-var css='body{font-family:Georgia,serif;color:#172033;margin:36px}h1{font-size:26px;margin:0 0 4px}.meta{color:#5f6b7f;font-size:13px;margin:0 0 22px}.fc{border:2px solid #30368f;border-radius:12px;padding:16px 18px;margin:0 0 14px;page-break-inside:avoid}.tag{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#30368f}.fc p{margin:5px 0 10px;font-size:15px;line-height:1.5}.fc p:last-child{margin-bottom:2px}.foot{margin-top:26px;color:#5f6b7f;font-size:12px}';
+var css='body{font-family:Georgia,serif;color:#172033;margin:36px}h1{font-size:26px;margin:0 0 4px}.meta{color:#5f6b7f;font-size:13px;margin:0 0 22px}.fc{border:2px solid #30368f;border-radius:12px;padding:16px 18px;margin:0 0 14px;page-break-inside:avoid;background:#F7F6FE}.tag{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#30368f}.fc p{margin:5px 0 10px;font-size:15px;line-height:1.5}.fc p:last-child{margin-bottom:2px}.foot{margin-top:26px;color:#5f6b7f;font-size:12px}';
 var body='<h1>BookLens Flashcards</h1><p class="meta">'+esc(bookName)+' &middot; '+list.length+' card'+(list.length===1?'':'s')+' &middot; '+esc(datestr)+'</p>'+list.map(function(c,i){return '<div class="fc"><div class="tag">Card '+(i+1)+' &mdash; Front</div><p>'+esc(c.front||'(empty)')+'</p><div class="tag">Back</div><p>'+esc(c.back||'(empty)')+'</p></div>'}).join('')+'<p class="foot">Made with BookLens</p>';
 var fr=el('fcPrintFrame');if(!fr){fr=document.createElement('iframe');fr.id='fcPrintFrame';fr.setAttribute('title','Print flashcards');fr.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;';document.body.appendChild(fr)}
 var doc=fr.contentDocument||fr.contentWindow.document;doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><title>'+esc('BookLens Flashcards'+(bookName?' - '+bookName:''))+'</title><style>'+css+'</style></head><body>'+body+'</body></html>');doc.close();
