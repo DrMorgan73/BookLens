@@ -104,6 +104,25 @@ mark.hl-blue{background:rgba(100,170,255,.42)}
 .howto-ico{font-size:1.25rem;line-height:1.3;flex:none}
 @media (max-width:560px){.howto-steps li{font-size:.88rem}.howto-toggle{font-size:.98rem}}
 
+
+/* ---- Flashcards (2026-10-02) ---- */
+.fc-head-actions{display:flex;gap:8px;flex-wrap:wrap}
+.fc-form{display:grid;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow)}
+.fc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-top:14px}
+.fc-card{background:var(--surface);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);overflow:hidden;cursor:pointer;min-height:150px;display:flex;flex-direction:column}
+.fc-card-face{padding:16px;flex:1;display:grid;place-items:center;text-align:center;font-size:.98rem}
+.fc-tag{font-size:.68rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:8px}
+.fc-card.flipped .fc-front{display:none}
+.fc-card:not(.flipped) .fc-back{display:none}
+.fc-card-actions{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--line)}
+.fc-card-actions button{flex:1;min-height:40px}
+.fc-empty{color:var(--muted);text-align:center;padding:26px 12px;border:1px dashed var(--line);border-radius:13px;margin-top:14px}
+.fc-study{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;margin-top:14px;box-shadow:var(--shadow);text-align:center}
+.fc-study-card{min-height:190px;display:grid;place-items:center;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:24px;margin:14px 0;cursor:pointer;font-size:1.08rem}
+.fc-study-nav{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap}
+.fc-study-count{color:var(--muted);font-weight:700}
+.fc-from-hl{flex:none;border:1px solid var(--line);background:var(--surface);color:var(--indigo);border-radius:8px;font-size:.74rem;font-weight:800;padding:7px 9px;cursor:pointer;min-height:36px;white-space:nowrap}
+.fc-from-hl:hover{background:var(--indigo-soft)}
 </style>
 </head>
 <body>
@@ -130,6 +149,7 @@ mark.hl-blue{background:rgba(100,170,255,.42)}
           <li><span class="howto-num" aria-hidden="true">3</span><span class="howto-ico" aria-hidden="true">🎧</span><span><strong>Listen</strong> — press play and the studio narrator reads in a real human voice. Pick your voice and speed below.</span></li>
           <li><span class="howto-num" aria-hidden="true">4</span><span class="howto-ico" aria-hidden="true">🌐</span><span><strong>Translate</strong> — switch EN / AR / ES, or tap <strong>Translate page</strong> for instant translation.</span></li>
           <li><span class="howto-num" aria-hidden="true">5</span><span class="howto-ico" aria-hidden="true">🖍️</span><span><strong>Study</strong> — select text to highlight it with marker colors, review them in the <strong>Highlights</strong> panel, and use Study mode tools.</span></li>
+          <li><span class="howto-num" aria-hidden="true">6</span><span class="howto-ico" aria-hidden="true">🃏</span><span><strong>Flashcards</strong> — make your own cards from scratch or from any highlight, study them, and download as PDF.</span></li>
         </ol>
       </section>
 
@@ -158,7 +178,21 @@ mark.hl-blue{background:rgba(100,170,255,.42)}
           <div class="tool-card" data-tool="topic" tabindex="0" role="button" aria-label="Find Specific Topic"><span class="tool-top"><svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><span class="tool-arrow">↗</span></span><strong>Find Specific Topic</strong><span class="topic-search"><input id="topicInput" placeholder="Search this subject" aria-label="Topic to find"><button id="topicGo" type="button">Find</button></span></div>
         </div><div class="result-panel" id="resultPanel" aria-live="polite"></div></section>
         <section class="section" id="reader"><div class="section-head"><div><h2>Reader View</h2><p>Read the reference passage while studio narration follows each sentence.</p></div></div><article class="reader-shell"><div class="reader-toolbar"><span class="chapter-label">Reference reading · Photosynthesis · p.42</span><div class="langs" role="group" aria-label="Reading language"><button class="lang-btn active" data-lang="en">EN</button><button class="lang-btn" data-lang="ar">AR</button><button class="lang-btn" data-lang="es">ES</button></div><div class="translate-ctl hidden" id="translateCtl"><button class="secondary" id="translateBtn" type="button">Translate page</button><select id="translateLang" aria-label="Translation language"><option value="ar">Arabic</option><option value="es">Spanish</option><option value="en">English</option></select><button class="secondary hidden" id="originalBtn" type="button">Original</button></div><button class="secondary" id="hlCountBtn" type="button">Highlights (0)</button></div><div id="hlPanel"><div class="hl-panel-head"><h4>Your highlights</h4><button class="secondary" id="hlClearAllBtn" type="button">Clear all</button></div><div id="hlList"></div></div><div class="reader-content" id="readerContent" dir="ltr"></div><div class="pager hidden" id="pager"><button id="prevPage" type="button">‹ Prev</button><span id="pageInfo"></span><button id="nextPage" type="button">Next ›</button></div></article></section>
-        <section class="section ask-card" id="ask"><h3 id="askTitle">Ask your Biology study pack</h3><p id="askHint">Ask in your own words. The answer uses your selected subject pack.</p><div class="ask-row"><input id="askInput" placeholder="What should I remember for the quiz?" aria-label="Question about the selected subject"><button class="ask-btn" id="askBtn">Ask</button></div><div class="answer" id="answer" aria-live="polite"></div></section>
+        <section class="section" id="flashcards"><div class="section-head"><div><h2>Flashcards</h2><p>Make your own study cards &mdash; from scratch or from any highlight &mdash; then download them as a PDF.</p></div><div class="fc-head-actions"><button class="secondary" id="fcStudyBtn" type="button">Study</button><button class="secondary" id="fcPdfBtn" type="button">Download PDF</button></div></div>
+      <div class="fc-form hidden" id="fcForm">
+        <div class="field"><label for="fcFront">Front &mdash; term or question</label><input id="fcFront" placeholder="e.g. What does chlorophyll do?" autocomplete="off"></div>
+        <div class="field"><label for="fcBack">Back &mdash; definition or answer</label><textarea id="fcBack" placeholder="Type the answer in your own words..."></textarea></div>
+        <div class="form-actions"><button class="primary" id="fcSaveBtn" type="button">Save card</button><button class="secondary" id="fcCancelBtn" type="button">Cancel</button></div>
+      </div>
+      <div class="form-actions"><button class="primary" id="fcNewBtn" type="button">＋ New card</button><span class="session-note" id="fcCount"></span></div>
+      <div class="fc-study hidden" id="fcStudy">
+        <div class="fc-study-count" id="fcStudyCount"></div>
+        <div class="fc-study-card" id="fcStudyCard" role="button" tabindex="0" aria-label="Flip card"></div>
+        <div class="fc-study-nav"><button class="secondary" id="fcPrevBtn" type="button">&lsaquo; Prev</button><button class="secondary" id="fcFlipBtn" type="button">Flip</button><button class="secondary" id="fcNextBtn" type="button">Next &rsaquo;</button><button class="secondary" id="fcExitStudyBtn" type="button">Exit</button></div>
+      </div>
+      <div class="fc-grid" id="fcGrid"></div>
+      </section>
+      <section class="section ask-card" id="ask"><h3 id="askTitle">Ask your Biology study pack</h3><p id="askHint">Ask in your own words. The answer uses your selected subject pack.</p><div class="ask-row"><input id="askInput" placeholder="What should I remember for the quiz?" aria-label="Question about the selected subject"><button class="ask-btn" id="askBtn">Ask</button></div><div class="answer" id="answer" aria-live="polite"></div></section>
       </div>
     </div>
 
@@ -288,7 +322,7 @@ function hlHideToolbar(){var tb=el('hlToolbar');if(tb)tb.classList.remove('show'
 function hlHideRemove(){var p=el('hlRemovePop');if(p)p.classList.remove('show');hlRemoveId=null}
 function hlMaybeShowToolbar(){hlHideRemove();var tb=el('hlToolbar'),sel=window.getSelection();if(!sel||!sel.rangeCount||sel.isCollapsed){hlHideToolbar();return}var range=sel.getRangeAt(0),rc=el('readerContent');if(!rc||!rc.contains(range.commonAncestorContainer)){hlHideToolbar();return}var r=hlRangeToOffsets(range);if(!r||!r.text||!r.text.trim()){hlHideToolbar();return}hlPending=r;var rect;try{rect=range.getBoundingClientRect()}catch(e){rect=null}if(!rect||typeof rect.top!=='number')rect={left:window.innerWidth/2,top:90,width:0,bottom:130};tb.classList.add('show');var tw=tb.offsetWidth||190,th=tb.offsetHeight||48;var x=Math.max(8,Math.min(window.innerWidth-tw-8,rect.left+rect.width/2-tw/2));var y=rect.top-th-12;if(y<8)y=rect.bottom+12;tb.style.left=x+'px';tb.style.top=y+'px'}
 function hlRenderCount(){var b=el('hlCountBtn');if(b)b.textContent='Highlights ('+hlForBook().length+')'}
-function hlRenderPanel(){var list=hlForBook().slice().sort(function(a,b){if(a.page<b.page)return -1;if(a.page>b.page)return 1;return a.start-b.start}),box=el('hlList');if(!list.length){box.innerHTML='<p class="session-note">No highlights yet. Select text in the reader to highlight it.</p>';return}box.innerHTML=list.map(function(h){return '<div class="hl-item" data-hlid="'+h.id+'"><span class="swatch" style="background:'+(HL_COLORS[h.color]||'#ffeb3b')+'"></span><span class="snippet" dir="auto">'+esc(h.snippet||'(highlight)')+'</span><span class="pg">'+esc(h.plabel||'')+'</span></div>'}).join('')}
+function hlRenderPanel(){var list=hlForBook().slice().sort(function(a,b){if(a.page<b.page)return -1;if(a.page>b.page)return 1;return a.start-b.start}),box=el('hlList');if(!list.length){box.innerHTML='<p class="session-note">No highlights yet. Select text in the reader to highlight it.</p>';return}box.innerHTML=list.map(function(h){return '<div class="hl-item" data-hlid="'+h.id+'"><span class="swatch" style="background:'+(HL_COLORS[h.color]||'#ffeb3b')+'"></span><span class="snippet" dir="auto">'+esc(h.snippet||'(highlight)')+'</span><span class="pg">'+esc(h.plabel||'')+'</span><button class="fc-from-hl" data-hlid="'+h.id+'" type="button" title="Make a flashcard from this highlight">\uff0b Card</button></div>'}).join('')}
 function hlGotoHighlight(h){var d=currentDoc;function go(){var m=el('readerContent').querySelector('mark[data-hlid="'+h.id+'"]');if(m){m.scrollIntoView({behavior:'smooth',block:'center'});var o=m.style.outline;m.style.outline='2px solid #fff';setTimeout(function(){m.style.outline=o},1400)}else{toast('Highlight is on another view \u2014 switch language or page')}}if(d&&d.source!=='sample'&&typeof h.bookPage==='number'&&h.bookPage!==d.page){d.page=h.bookPage;renderBookPage();setTimeout(go,120);return}if((!d||d.source==='sample')&&h.lang&&h.lang!==currentLang){selectLanguage(h.lang,true);setTimeout(go,120);return}go()}
 document.addEventListener('selectionchange',function(){clearTimeout(hlSelTimer);hlSelTimer=setTimeout(hlMaybeShowToolbar,200)});
 document.addEventListener('scroll',function(){hlHideToolbar()},true);
@@ -298,7 +332,60 @@ el('hlRemoveBtn').addEventListener('click',function(){if(hlRemoveId)hlStore=hlSt
 el('hlCountBtn').addEventListener('click',function(){var p=el('hlPanel'),show=!p.classList.contains('show');p.classList.toggle('show',show);if(show)hlRenderPanel()});
 el('hlList').addEventListener('click',function(e){var item=e.target&&e.target.closest?e.target.closest('.hl-item'):null;if(!item)return;var id=item.getAttribute('data-hlid'),h=null;for(var i=0;i<hlStore.length;i++)if(hlStore[i].id===id){h=hlStore[i];break}if(h)hlGotoHighlight(h)});
 function hlDeleteAllForBook(){var b=hlBookId(),n=hlForBook().length;if(!n){toast('No highlights to clear');return}if(!confirm('Remove all '+n+' highlight'+(n===1?'':'s')+'?'))return;hlStore=hlStore.filter(function(h){return h.book!==b});hlSave();hlClearAll();hlRenderCount();hlRenderPanel();toast('Cleared '+n+' highlight'+(n===1?'':'s'))} el('hlClearAllBtn').addEventListener('click',hlDeleteAllForBook);/* ============== end highlight markers ============== */
-    renderLibrary();refreshTtsVoices();setAppMode('narration');renderReader();renderRoster();renderAssignments();renderReadingPicker();setAudio(true);switchRole('student');
+    
+/* ============== flashcards (2026-10-02) ============== */
+var FC_KEY='booklens_flashcards_v1';
+var fcStore=[];try{fcStore=JSON.parse(localStorage.getItem(FC_KEY)||'[]')}catch(e){fcStore=[]}
+var fcEditId=null,fcStudyIdx=0,fcStudyFlipped=false;
+function fcSave(){try{localStorage.setItem(FC_KEY,JSON.stringify(fcStore))}catch(e){}}
+function fcBook(){return (typeof hlBookId==='function')?hlBookId():'sample'}
+function fcList(){var b=fcBook();return fcStore.filter(function(c){return c.book===b})}
+function fcRender(){var list=fcList(),grid=el('fcGrid'),cnt=el('fcCount'),studyBtn=el('fcStudyBtn'),pdfBtn=el('fcPdfBtn');if(!grid)return;
+if(cnt)cnt.textContent=list.length?(list.length+' card'+(list.length===1?'':'s')+' for this book'):'No cards yet for this book';
+if(studyBtn)studyBtn.disabled=!list.length;if(pdfBtn)pdfBtn.disabled=!list.length;
+if(!list.length){grid.innerHTML='<div class="fc-empty">No cards yet. Tap <strong>\uff0b New card</strong>, or tap <strong>\uff0b Card</strong> on any highlight to turn it into a card.</div>';fcStudyExit();return}
+grid.innerHTML=list.map(function(c){return '<div class="fc-card" data-fcid="'+c.id+'"><div class="fc-card-face fc-front"><div><span class="fc-tag">Front</span><span dir="auto">'+esc(c.front||'(empty)')+'</span></div></div><div class="fc-card-face fc-back"><div><span class="fc-tag">Back</span><span dir="auto">'+esc(c.back||'(empty)')+'</span></div></div><div class="fc-card-actions"><button class="small-btn fc-edit" type="button">Edit</button><button class="small-btn fc-del" type="button">Delete</button></div></div>'}).join('')}
+function fcOpenForm(front){fcEditId=null;var f=el('fcForm');if(!f)return;f.classList.remove('hidden');el('fcFront').value=front||'';el('fcBack').value='';el('fcSaveBtn').textContent='Save card';fcStudyExit();setTimeout(function(){try{(front?el('fcBack'):el('fcFront')).focus()}catch(e){}},60);try{el('flashcards').scrollIntoView({behavior:'smooth',block:'start'})}catch(e){}}
+function fcCloseForm(){var f=el('fcForm');if(f)f.classList.add('hidden');fcEditId=null}
+function fcPersist(front,back){var wasEdit=!!fcEditId,now=Date.now();if(wasEdit){for(var i=0;i<fcStore.length;i++)if(fcStore[i].id===fcEditId){fcStore[i].front=front;fcStore[i].back=back;break}}else{fcStore.push({id:'fc'+now+Math.floor(Math.random()*1e4),book:fcBook(),front:front,back:back,ts:now})}
+fcSave();fcCloseForm();fcRender();toast(wasEdit?'Card updated':'Card saved')}
+function fcFind(id){for(var i=0;i<fcStore.length;i++)if(fcStore[i].id===id)return fcStore[i];return null}
+function fcStudyRender(){var list=fcList(),box=el('fcStudy'),card=el('fcStudyCard'),count=el('fcStudyCount');if(!box||!card)return;
+if(!list.length){toast('No cards to study yet');return}
+fcStudyIdx=Math.max(0,Math.min(fcStudyIdx,list.length-1));var c=list[fcStudyIdx];
+if(count)count.textContent='Card '+(fcStudyIdx+1)+' of '+list.length;
+card.innerHTML='<div><span class="fc-tag">'+(fcStudyFlipped?'Back':'Front')+'</span><div dir="auto" style="margin-top:8px">'+esc(fcStudyFlipped?(c.back||'(empty)'):(c.front||'(empty)'))+'</div><div class="session-note" style="margin-top:10px">Tap to flip</div></div>';
+box.classList.remove('hidden')}
+function fcStudyExit(){var box=el('fcStudy');if(box)box.classList.add('hidden')}
+function fcPdf(){var list=fcList();if(!list.length){toast('No cards to download yet');return}
+var bookName='';try{var bn=el('bookName');if(bn&&bn.textContent)bookName=bn.textContent.trim()}catch(e){}
+var datestr='';try{datestr=new Date().toLocaleDateString()}catch(e){}
+var css='body{font-family:Georgia,serif;color:#172033;margin:36px}h1{font-size:26px;margin:0 0 4px}.meta{color:#5f6b7f;font-size:13px;margin:0 0 22px}.fc{border:2px solid #30368f;border-radius:12px;padding:16px 18px;margin:0 0 14px;page-break-inside:avoid}.tag{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#30368f}.fc p{margin:5px 0 10px;font-size:15px;line-height:1.5}.fc p:last-child{margin-bottom:2px}.foot{margin-top:26px;color:#5f6b7f;font-size:12px}';
+var body='<h1>BookLens Flashcards</h1><p class="meta">'+esc(bookName)+' &middot; '+list.length+' card'+(list.length===1?'':'s')+' &middot; '+esc(datestr)+'</p>'+list.map(function(c,i){return '<div class="fc"><div class="tag">Card '+(i+1)+' &mdash; Front</div><p>'+esc(c.front||'(empty)')+'</p><div class="tag">Back</div><p>'+esc(c.back||'(empty)')+'</p></div>'}).join('')+'<p class="foot">Made with BookLens</p>';
+var fr=el('fcPrintFrame');if(!fr){fr=document.createElement('iframe');fr.id='fcPrintFrame';fr.setAttribute('title','Print flashcards');fr.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;';document.body.appendChild(fr)}
+var doc=fr.contentDocument||fr.contentWindow.document;doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><title>'+esc('BookLens Flashcards'+(bookName?' - '+bookName:''))+'</title><style>'+css+'</style></head><body>'+body+'</body></html>');doc.close();
+setTimeout(function(){try{fr.contentWindow.focus();fr.contentWindow.print()}catch(e){toast('Could not open the print dialog')}},400)}
+el('fcNewBtn').addEventListener('click',function(){fcOpenForm('')});
+el('fcCancelBtn').addEventListener('click',fcCloseForm);
+el('fcSaveBtn').addEventListener('click',function(){var f=el('fcFront').value.trim(),b=el('fcBack').value.trim();if(!f&&!b){toast('Write something on the card first');return}fcPersist(f,b)});
+el('fcGrid').addEventListener('click',function(e){var t=e.target,ok=t&&t.closest?true:false;if(!ok)return;
+var card=t.closest('.fc-card');if(!card)return;var id=card.getAttribute('data-fcid');
+var eb=t.closest('.fc-edit'),db=t.closest('.fc-del');
+if(eb){e.stopPropagation();var c=fcFind(id);if(c){fcEditId=id;el('fcForm').classList.remove('hidden');el('fcFront').value=c.front;el('fcBack').value=c.back;el('fcSaveBtn').textContent='Update card';fcStudyExit();try{el('fcFront').focus();el('flashcards').scrollIntoView({behavior:'smooth',block:'start'})}catch(e2){}}return}
+if(db){e.stopPropagation();if(!confirm('Delete this card?'))return;fcStore=fcStore.filter(function(x){return x.id!==id});fcSave();fcRender();toast('Card deleted');return}
+card.classList.toggle('flipped')});
+el('fcStudyBtn').addEventListener('click',function(){fcStudyIdx=0;fcStudyFlipped=false;fcCloseForm();fcStudyRender();try{el('flashcards').scrollIntoView({behavior:'smooth',block:'start'})}catch(e){}});
+el('fcExitStudyBtn').addEventListener('click',fcStudyExit);
+el('fcFlipBtn').addEventListener('click',function(){fcStudyFlipped=!fcStudyFlipped;fcStudyRender()});
+el('fcStudyCard').addEventListener('click',function(){fcStudyFlipped=!fcStudyFlipped;fcStudyRender()});
+el('fcPrevBtn').addEventListener('click',function(){var n=fcList().length;if(!n)return;fcStudyFlipped=false;fcStudyIdx=(fcStudyIdx-1+n)%n;fcStudyRender()});
+el('fcNextBtn').addEventListener('click',function(){var n=fcList().length;if(!n)return;fcStudyFlipped=false;fcStudyIdx=(fcStudyIdx+1)%n;fcStudyRender()});
+el('fcPdfBtn').addEventListener('click',fcPdf);
+document.addEventListener('click',function(e){var t=e.target;if(!t||!t.closest)return;var b=t.closest('.fc-from-hl');if(!b)return;e.stopPropagation();e.preventDefault();var id=b.getAttribute('data-hlid'),h=null;for(var i=0;i<hlStore.length;i++)if(String(hlStore[i].id)===String(id)){h=hlStore[i];break}if(h)fcOpenForm((h.snippet||'').trim());else toast('Highlight not found')},true);
+var _renderReaderOrig=renderReader;renderReader=function(){_renderReaderOrig();fcRender()};
+fcRender();
+/* ============== end flashcards ============== */
+renderLibrary();refreshTtsVoices();setAppMode('narration');renderReader();renderRoster();renderAssignments();renderReadingPicker();setAudio(true);switchRole('student');
   })();
   </script>
 </body>
