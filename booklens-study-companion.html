@@ -3,6 +3,51 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="BookLens">
+  <style>
+    /* ---- BookLens Portal (IEC) + Feedback + PWA ---- */
+    .portal-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .portal-btn{border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;border-radius:10px;padding:9px 13px;font-weight:700;cursor:pointer;min-height:44px}
+    .portal-btn.gold{background:var(--gold);border-color:var(--gold);color:#172033}
+    .portal-who{color:#fff;font-weight:700;font-size:.92rem}
+    .install-banner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:1120px;margin:14px auto 0;padding:12px 16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);font-size:.95rem}
+    .install-banner .install-ios{flex-basis:100%;color:var(--muted);font-size:.88rem}
+    .portal-home{background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:16px;padding:20px}
+    .portal-home h2{font-family:"Source Serif 4",serif;font-size:clamp(1.4rem,3vw,1.9rem);margin:0 0 4px}
+    .portal-home .brand-line{color:var(--muted);margin:0 0 14px}
+    .continue-item,.mc-student,.mc-assign-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+    .continue-item strong,.mc-student strong,.mc-assign-item strong{display:block}
+    .continue-item span,.mc-student span,.mc-assign-item span{color:var(--muted);font-size:.86rem;display:block}
+    .portal-actions{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+    .portal-actions .primary,.portal-actions .secondary{min-height:44px}
+    .status-pill{display:inline-block;margin-top:4px;padding:2px 9px;border-radius:999px;background:var(--indigo-soft);color:var(--indigo);font-size:.74rem;font-weight:800}
+    .status-pill.done{background:var(--teal-soft);color:var(--teal)}
+    .portal-console{margin-bottom:16px}
+    .portal-console .field{margin-bottom:10px}
+    .pf-tabs{display:flex;gap:8px;margin-bottom:16px}
+    .pf-tabs button{flex:1}
+    .fb-stars{display:flex;gap:6px;margin:4px 0 10px}
+    .fb-star{width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);font-size:1.3rem;cursor:pointer;color:var(--muted)}
+    .fb-star.on{background:var(--gold-soft);border-color:var(--gold);color:#b8860b}
+    .hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;opacity:0}
+    .demo-card{background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:16px;padding:20px}
+    .demo-video{display:block;width:100%;max-height:70vh;background:#111522;border-radius:12px}
+    .portal-home input,.portal-console input,.portal-console select,.subject-dialog input,.subject-dialog select,.subject-dialog textarea{font-size:16px}
+    .portal-home .field,.portal-console .field{display:grid;gap:5px}
+    .portal-home .field label,.portal-console .field label{font-size:.78rem;color:var(--muted);font-weight:700}
+    .portal-home .field input,.portal-console .field input,.portal-console .field select{width:100%;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);color:var(--ink);padding:10px;min-height:44px}
+    @media(max-width:640px){
+      .portal-bar{width:100%}
+      .portal-btn{flex:1;padding:10px 8px}
+      .portal-who{flex-basis:100%}
+      .continue-item,.mc-student,.mc-assign-item{flex-direction:column;align-items:stretch}
+      .continue-item .primary,.mc-student .small-btn{width:100%;min-height:44px}
+      .install-banner{margin:10px 10px 0}
+    }
+  </style>
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#30368f">
   <link rel="icon" href="data:,">
@@ -135,10 +180,22 @@ mark.hl-blue{background:rgba(100,170,255,.42)}
         <div class="switch" role="group" aria-label="Choose role"><button class="role-btn active" data-role="student">Student</button><button class="role-btn" data-role="mentor">Mentor</button></div>
         <button class="subject-button" id="subjectSwitcher">Subject: <span id="subjectName">Biology</span> ▾</button>
       </div>
+        <div class="portal-bar" id="portalBar">
+          <span class="portal-who hidden" id="portalWho"></span>
+          <button class="portal-btn" id="portalSignInBtn" type="button">Sign in</button>
+          <button class="portal-btn hidden" id="portalSignOutBtn" type="button">Sign out</button>
+          <button class="portal-btn gold" id="feedbackOpenBtn" type="button">Feedback</button>
+        </div>
       <h1 id="heroTitle">Turn a chapter into a study session.</h1>
       <p id="heroText">Study actively with focused extraction, a human-voice narrator, practice questions, and mentor guidance.</p>
     </div>
   </header>
+  <div class="install-banner hidden" id="installBanner">
+    <span>📚 <strong>Install BookLens</strong> — one tap to open, works offline.</span>
+    <button class="small-btn" id="installBannerBtn" type="button">Install</button>
+    <button class="small-btn" id="installBannerX" type="button" aria-label="Dismiss install banner">✕</button>
+    <span class="install-ios hidden" id="iosInstallHint">On iPhone: tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>.</span>
+  </div>
 
   <main class="wrap">
     <div class="view" id="studentView">
@@ -168,6 +225,34 @@ mark.hl-blue{background:rgba(100,170,255,.42)}
       <div class="book-strip" id="bookStrip" aria-live="polite"><div class="book-badge" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg></div><div><strong id="bookName">Foundations of Biology</strong><small id="bookMeta">Chapter 6 · Photosynthesis · 18 pages</small></div><div class="ready-dot">● Ready to study</div></div>
       <details class="parse-preview" id="parsePreview"><summary id="parseSummary">Document text preview</summary><p id="parseText"></p></details>
       <div class="empty-state" id="emptyState"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3H11v17H5.5A2.5 2.5 0 0 0 3 22V5.5ZM21 5.5A2.5 2.5 0 0 0 18.5 3H13v17h5.5A2.5 2.5 0 0 1 21 22V5.5Z"/></svg><p>Choose a subject, then load a sample or bring your own document.</p></div>
+      <section class="section demo-card" id="demoSection">
+        <div class="section-head"><div><h2>Watch how BookLens works</h2><p>A short tour: load a book, listen, highlight, and study with flashcards.</p></div></div>
+        <video class="demo-video" controls playsinline preload="none" poster="/demo/booklens-how-to-poster.jpg" aria-label="How to use BookLens — demo video">
+          <source src="/demo/booklens-how-to.mp4" type="video/mp4">
+          <track kind="captions" src="/demo/booklens-how-to.en.vtt" srclang="en" label="English">
+          Your browser cannot play this video.
+        </video>
+      </section>
+      <section class="section portal-home hidden" id="portalHome">
+        <h2 id="portalGreeting">My Portal</h2>
+        <p class="brand-line">BookLens by IEC, Inc. — your library, assignments and flashcards, saved to your profile on this device.</p>
+        <h3>Continue Reading</h3>
+        <div id="continueList"></div>
+        <div class="portal-actions">
+          <button class="primary" type="button" data-goto="librarySection">My Library</button>
+          <button class="secondary" type="button" data-goto="assignments">My Assignments</button>
+          <button class="secondary" type="button" data-goto="flashcards">My Flashcards</button>
+          <button class="secondary hidden" id="installBtn" type="button">Install BookLens</button>
+          <button class="secondary" id="feedbackOpenBtn2" type="button">Feedback</button>
+        </div>
+        <p class="install-ios hidden" id="iosInstallHint2">On iPhone: tap <strong>Share</strong>, then <strong>Add to Home Screen</strong> to install BookLens.</p>
+        <details class="portal-account">
+          <summary>Account on this device</summary>
+          <div class="field"><label for="cpCurrent">Current password</label><input id="cpCurrent" type="password" autocomplete="current-password"></div>
+          <div class="field"><label for="cpNew">New password</label><input id="cpNew" type="password" autocomplete="new-password"></div>
+          <div class="form-actions"><button class="secondary" id="cpBtn" type="button">Change password</button><button class="secondary" id="portalSignOutBtn2" type="button">Sign out</button><span class="session-note" id="cpMsg"></span></div>
+        </details>
+      </section>
       <section class="section" id="librarySection"><div class="section-head"><div><h2>My Library</h2><p>All your books, grouped by subject. Tap any book to open it instantly.</p></div></div><div id="libraryGroups"></div></section>
       <div class="workspace" id="workspace">
         <div class="mode-toggle" id="modeToggle" role="group" aria-label="Study mode"><button class="mode-btn active" data-mode="narration" type="button">Narration</button><button class="mode-btn" data-mode="study" type="button">Study</button></div>
@@ -200,6 +285,26 @@ mark.hl-blue{background:rgba(100,170,255,.42)}
     </div>
 
     <div class="view hidden" id="mentorView">
+      <div class="mentor-card portal-console" id="mentorConsole">
+        <h2>Mentor console</h2>
+        <p id="mcNote">Sign in with a mentor profile to create student profiles and assign work on this device.</p>
+        <div id="mcBody" class="hidden">
+          <h3>My students (on this device)</h3>
+          <div id="mcStudents"></div>
+          <h3>Create a student profile</h3>
+          <div class="field"><label for="mcStuName">Student name</label><input id="mcStuName" type="text" autocomplete="off"></div>
+          <div class="field"><label for="mcStuPass">Student password (share it with the student)</label><input id="mcStuPass" type="text" autocomplete="off"></div>
+          <div class="form-actions"><button class="primary" id="mcCreateStudent" type="button">Create student</button><span class="session-note" id="mcCreateMsg"></span></div>
+          <h3>Assign work</h3>
+          <div class="field"><label for="mcAssignStudent">Student</label><select id="mcAssignStudent"></select></div>
+          <div class="field"><label for="mcAssignTitle">Title</label><input id="mcAssignTitle" type="text" placeholder="Chapter review"></div>
+          <div class="field"><label for="mcAssignNote">Instructions</label><textarea id="mcAssignNote" placeholder="Read, extract three concepts, and complete the quiz."></textarea></div>
+          <div class="field"><label for="mcAssignDue">Due date</label><input id="mcAssignDue" type="date"></div>
+          <div class="form-actions"><button class="primary" id="mcAssignBtn" type="button">Assign</button><span class="session-note" id="mcAssignMsg"></span></div>
+          <h3>Assignments</h3>
+          <div id="mcAssignList"></div>
+        </div>
+      </div>
       <section class="mentor-grid">
         <div class="mentor-card"><h2>Class overview</h2><p>Monitor study progress and focus your next check-in.</p><div class="stats"><div class="stat"><strong id="statStudents">0</strong><span>Active students</span></div><div class="stat"><strong id="statQuiz">\u2014</strong><span>Quiz average</span></div><div class="stat"><strong id="statTrack">0 / 0</strong><span>On track</span></div></div><div class="roster" id="roster"></div></div>
         <div class="forms-stack">
@@ -221,6 +326,44 @@ mark.hl-blue{background:rgba(100,170,255,.42)}
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.7.2/mammoth.browser.min.js"></script>
+  <div class="subject-modal hidden" id="profileModal" role="dialog" aria-modal="true" aria-labelledby="pfTitle">
+    <div class="subject-dialog">
+      <h2 id="pfTitle">BookLens profile</h2>
+      <p>Profiles live on this device. Your books, highlights and flashcards stay separate for each profile.</p>
+      <div class="pf-tabs">
+        <button class="primary" id="pfTabIn" type="button">Sign in</button>
+        <button class="secondary" id="pfTabNew" type="button">Create profile</button>
+      </div>
+      <div id="pfSignInPane">
+        <div class="field"><label for="pfSelect">Profile on this device</label><select id="pfSelect"></select></div>
+        <div class="field"><label for="pfPass">Password</label><input id="pfPass" type="password" autocomplete="current-password"></div>
+        <div class="form-actions"><button class="primary" id="pfDoSignIn" type="button">Sign in</button><button class="secondary" id="pfClose1" type="button">Cancel</button><span class="session-note" id="pfMsg"></span></div>
+      </div>
+      <div id="pfCreatePane" class="hidden">
+        <div class="field"><label for="pcName">Your name</label><input id="pcName" type="text" autocomplete="name"></div>
+        <div class="field"><label for="pcRole">I am a</label><select id="pcRole"><option value="student">Student</option><option value="mentor">Mentor</option></select></div>
+        <div class="field hidden" id="pcCodeRow"><label for="pcCode">IEC mentor code</label><input id="pcCode" type="text" autocomplete="off" placeholder="Ask IEC for the mentor code"></div>
+        <div class="field"><label for="pcPass">Password (4+ characters)</label><input id="pcPass" type="password" autocomplete="new-password"></div>
+        <div class="form-actions"><button class="primary" id="pcDoCreate" type="button">Create profile</button><button class="secondary" id="pfClose2" type="button">Cancel</button><span class="session-note" id="pcMsg"></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="subject-modal hidden" id="feedbackModal" role="dialog" aria-modal="true" aria-labelledby="fbTitle">
+    <div class="subject-dialog">
+      <h2 id="fbTitle">Send feedback</h2>
+      <p>Tell the IEC team what is working and what is not. BookLens by IEC, Inc.</p>
+      <div class="field"><label for="fbCategory">Category</label><select id="fbCategory"><option>Bug report</option><option>Suggestion</option><option>Book or content</option><option>Other</option></select></div>
+      <div class="field"><label>How is BookLens working for you?</label>
+        <div class="fb-stars" id="fbStars"><button type="button" class="fb-star" data-v="1" aria-label="1 star">★</button><button type="button" class="fb-star" data-v="2" aria-label="2 stars">★</button><button type="button" class="fb-star" data-v="3" aria-label="3 stars">★</button><button type="button" class="fb-star" data-v="4" aria-label="4 stars">★</button><button type="button" class="fb-star" data-v="5" aria-label="5 stars">★</button></div>
+      </div>
+      <div class="field"><label for="fbName">Name (optional)</label><input id="fbName" type="text" autocomplete="name"></div>
+      <div class="field"><label for="fbEmail">Contact email (optional, for a reply)</label><input id="fbEmail" type="email" autocomplete="email"></div>
+      <div class="field"><label for="fbMessage">Message</label><textarea id="fbMessage" maxlength="2000" placeholder="What happened, or what would you like to see?"></textarea></div>
+      <input class="hp" id="fbWebsite" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div class="form-actions"><button class="primary" id="fbSubmit" type="button">Send feedback</button><button class="secondary" id="fbClose" type="button">Cancel</button></div>
+      <div id="fbResult" class="hidden"></div>
+    </div>
+  </div>
   <script>
   (function(){"use strict";
     var el=function(id){return document.getElementById(id)},currentSubject="Biology",currentLang="en",loaded=false,pendingFile=null,assignments=[{title:"Photosynthesis concept map",subject:"Biology",instructions:"Connect light reactions, the Calvin cycle, and glucose production.",due:"Friday"}],quizzes=[],feedback={},readings=[],currentDoc=null,appMode="narration",translating=false,sampleLive=null,sampleCache={},tts={speaking:false,sentences:[],idx:0,voiceList:[]},library=[],LIB_KEY="booklens_library_v2";try{library=JSON.parse(localStorage.getItem(LIB_KEY)||"[]")}catch(e){library=[]}
@@ -388,7 +531,271 @@ document.addEventListener('click',function(e){var t=e.target;if(!t||!t.closest)r
 var _renderReaderOrig=renderReader;renderReader=function(){_renderReaderOrig();fcRender()};
 fcRender();
 /* ============== end flashcards ============== */
-renderLibrary();refreshTtsVoices();setAppMode('narration');renderReader();renderRoster();renderAssignments();renderReadingPicker();setAudio(true);switchRole('student');
+/* ============== BookLens Portal (IEC) — local profiles on this device, no server ==============
+   Profiles, libraries, highlights, flashcards, progress and assignments are stored
+   per profile in localStorage on this device only. Guest mode is unchanged. */
+var BL_MENTOR_CODE='IEC-MENTOR-2026'; /* IEC OFFICE: the mentor code. Change this value to rotate mentor access. */
+var BL_APP_VERSION='1.4.0';
+var BL_PROFILES_KEY='booklens_profiles_v1',BL_SESSION_KEY='booklens_session_v1',BL_ASSIGN_KEY='booklens_assignments_v1',BL_PROGRESS_BASE='booklens_progress_v1',BL_DISMISS_KEY='booklens_install_dismissed';
+var BL={active:null,profiles:[],assignments:[]};
+function blLoad(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function blSave(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function blUid(p){return (p||'p')+Date.now().toString(36)+Math.floor(Math.random()*1e6).toString(36)}
+BL.profiles=blLoad(BL_PROFILES_KEY,[]);
+(function(){var s=blLoad(BL_SESSION_KEY,null);if(s&&s.profileId){for(var i=0;i<BL.profiles.length;i++){if(BL.profiles[i].id===s.profileId)BL.active=BL.profiles[i]}}})();
+if(BL.active){
+  LIB_KEY=LIB_KEY+'::'+BL.active.id;HL_KEY=HL_KEY+'::'+BL.active.id;FC_KEY=FC_KEY+'::'+BL.active.id;
+  library=blLoad(LIB_KEY,[]);hlStore=blLoad(HL_KEY,[]);fcStore=blLoad(FC_KEY,[]);
+}
+BL.assignments=blLoad(BL_ASSIGN_KEY,[]);
+function blProgressKey(){return BL_PROGRESS_BASE+'::'+(BL.active?BL.active.id:'guest')}
+function blProgress(){return blLoad(blProgressKey(),{})}
+function blHash(str){
+  if(window.crypto&&crypto.subtle&&crypto.subtle.digest&&window.TextEncoder){
+    return crypto.subtle.digest('SHA-256',new TextEncoder().encode(str)).then(function(buf){return Array.prototype.map.call(new Uint8Array(buf),function(b){return('0'+b.toString(16)).slice(-2)}).join('')});
+  }
+  var h1=0xdeadbeef,h2=0x41c6ce57,s=str+'::booklens';for(var i=0;i<s.length;i++){var ch=s.charCodeAt(i);h1=Math.imul(h1^ch,2654435761);h2=Math.imul(h2^ch,1597334677)}h1=(h1^(h1>>>16))>>>0;h2=(h2^(h2>>>16))>>>0;
+  return Promise.resolve(('0000000'+h1.toString(16)).slice(-8)+('0000000'+h2.toString(16)).slice(-8));
+}
+function blMakeProfile(name,role,password,createdBy){
+  var salt=blUid('s');
+  return blHash(salt+'::'+password).then(function(hash){
+    var p={id:blUid('u'),name:name,role:role,salt:salt,passHash:hash,createdBy:createdBy||'self',createdAt:Date.now()};
+    BL.profiles.push(p);blSave(BL_PROFILES_KEY,BL.profiles);return p;
+  });
+}
+function blProfileById(id){for(var i=0;i<BL.profiles.length;i++)if(BL.profiles[i].id===id)return BL.profiles[i];return null}
+function blNameTaken(name){var n=name.trim().toLowerCase();for(var i=0;i<BL.profiles.length;i++)if(BL.profiles[i].name.trim().toLowerCase()===n)return true;return false}
+/* ---- reading progress + Continue Reading ---- */
+function blSaveProgress(){
+  if(!BL.active)return;var d=currentDoc;if(!d||d.source==='sample'||!d.id)return;
+  var map=blProgress();map[d.id]={page:d.page||0,title:d.title||'',ts:Date.now()};blSave(blProgressKey(),map);blRenderContinue();
+}
+var _blRenderBookPage=renderBookPage;
+renderBookPage=function(){_blRenderBookPage();blSaveProgress();};
+var _blLoadBook=loadBook;
+loadBook=function(name,meta,scroll,doc){
+  var saved=null;
+  if(BL.active&&doc&&doc.id){var pp=blProgress()[doc.id];if(pp&&typeof pp.page==='number')saved=pp.page;}
+  _blLoadBook(name,meta,scroll,doc);
+  if(saved!==null&&saved>0&&currentDoc&&currentDoc.pages&&saved<currentDoc.pages.length){currentDoc.page=saved;renderBookPage();}
+};
+function blRenderContinue(){
+  var box=el('continueList');if(!box)return;
+  if(!BL.active){box.innerHTML='';return}
+  var map=blProgress(),ids=Object.keys(map).sort(function(a,b){return (map[b].ts||0)-(map[a].ts||0)}),rows=[];
+  ids.forEach(function(id){var rec=null;library.forEach(function(b){if(b.id===id)rec=b});if(rec)rows.push({rec:rec,p:map[id]})});
+  box.innerHTML=rows.length?rows.map(function(r){return '<div class="continue-item"><div><strong>'+esc(r.rec.name)+'</strong><span>Page '+((r.p.page||0)+1)+' · '+esc(r.rec.subject||'General')+'</span></div><button class="primary bl-continue" data-id="'+r.rec.id+'" type="button">Continue</button></div>'}).join(''):'<p class="session-note">Books you open will appear here so you can pick up where you left off.</p>';
+}
+/* ---- assignments (device store, mentor -> student) ---- */
+var _blRenderAssignments=renderAssignments;
+renderAssignments=function(){_blRenderAssignments();blRenderStudentAssignments();};
+function blRenderStudentAssignments(){
+  if(!BL.active||BL.active.role!=='student')return;
+  var box=el('studentAssignments');if(!box)return;
+  var mine=BL.assignments.filter(function(a){return a.to===BL.active.id});
+  box.innerHTML=mine.length?mine.map(function(a){
+    return '<div class="assignment-item"><div><strong>'+esc(a.title)+'</strong><span>'+esc(a.subject||'')+(a.instructions?' · '+esc(a.instructions):'')+'</span><span class="status-pill'+(a.status==='done'?' done':'')+'">'+(a.status==='done'?'Done':'Assigned')+'</span></div>'+(a.status==='done'?'<small class="due">Completed</small>':'<button class="small-btn bl-done" data-aid="'+a.id+'" type="button">Mark done</button>')+'</div>';
+  }).join(''):'<p class="session-note">No assignments from your mentor yet.</p>';
+}
+/* ---- mentor console ---- */
+function blMyStudents(){if(!BL.active)return[];return BL.profiles.filter(function(p){return p.role==='student'&&p.createdBy===BL.active.id})}
+function blRenderConsole(){
+  var body=el('mcBody'),note=el('mcNote');if(!body||!note)return;
+  if(BL.active&&BL.active.role==='mentor'){
+    body.classList.remove('hidden');
+    note.textContent='Students and assignments live on this device only — nothing is sent anywhere.';
+    blRenderMyStudents();blRenderMcAssignments();
+  }else{
+    body.classList.add('hidden');
+    note.textContent=BL.active?'You are signed in as a student. Mentor tools need a mentor profile.':'Sign in with a mentor profile to create student profiles and assign work on this device.';
+  }
+}
+function blRenderMyStudents(){
+  var box=el('mcStudents'),sel=el('mcAssignStudent');if(!box)return;
+  var mine=blMyStudents();
+  box.innerHTML=mine.length?mine.map(function(s){return '<div class="mc-student"><div><strong>'+esc(s.name)+'</strong><span>Student profile on this device</span></div></div>'}).join(''):'<p class="session-note">No student profiles yet — create one below.</p>';
+  if(sel)sel.innerHTML=mine.length?mine.map(function(s){return '<option value="'+s.id+'">'+esc(s.name)+'</option>'}).join(''):'<option value="">No students yet</option>';
+}
+function blRenderMcAssignments(){
+  var box=el('mcAssignList');if(!box||!BL.active)return;
+  var mine=BL.assignments.filter(function(a){return a.from===BL.active.id});
+  box.innerHTML=mine.length?mine.map(function(a){var st=blProfileById(a.to);return '<div class="mc-assign-item"><div><strong>'+esc(a.title)+'</strong><span>For '+esc(st?st.name:'a student')+(a.due?' · due '+esc(a.due):'')+'</span></div><span class="status-pill'+(a.status==='done'?' done':'')+'">'+(a.status==='done'?'Done':'Assigned')+'</span></div>'}).join(''):'<p class="session-note">No assignments yet.</p>';
+}
+/* ---- chrome (portal bar, portal home) ---- */
+function blRenderChrome(){
+  var who=el('portalWho'),si=el('portalSignInBtn'),so=el('portalSignOutBtn'),home=el('portalHome');
+  if(!who)return;
+  if(BL.active){
+    who.textContent='👤 '+BL.active.name+' · '+(BL.active.role==='mentor'?'Mentor':'Student');
+    who.classList.remove('hidden');si.classList.add('hidden');so.classList.remove('hidden');
+    home.classList.remove('hidden');el('portalGreeting').textContent='Welcome, '+BL.active.name;
+    blRenderContinue();
+  }else{
+    who.classList.add('hidden');si.classList.remove('hidden');so.classList.add('hidden');home.classList.add('hidden');
+  }
+  blRenderConsole();
+}
+function blSignOut(){try{localStorage.removeItem(BL_SESSION_KEY)}catch(e){}location.reload()}
+function blOpenProfileModal(tab){
+  var m=el('profileModal');m.classList.remove('hidden');blPfTab(tab||'in');blFillProfileSelect();
+  setTimeout(function(){var f=el(tab==='new'?'pcName':'pfPass');if(f)f.focus()},60);
+}
+function blCloseProfileModal(){el('profileModal').classList.add('hidden')}
+function blPfTab(tab){
+  el('pfSignInPane').classList.toggle('hidden',tab!=='in');
+  el('pfCreatePane').classList.toggle('hidden',tab!=='new');
+  el('pfTabIn').className=tab==='in'?'primary':'secondary';
+  el('pfTabNew').className=tab==='new'?'primary':'secondary';
+}
+function blFillProfileSelect(){
+  var sel=el('pfSelect');if(!sel)return;
+  sel.innerHTML=BL.profiles.length?BL.profiles.map(function(p){return '<option value="'+p.id+'">'+esc(p.name)+' ('+(p.role==='mentor'?'Mentor':'Student')+')</option>'}).join(''):'<option value="">No profiles on this device yet</option>';
+}
+/* ---- feedback ---- */
+var blFbStars=0;
+function blOpenFeedback(){
+  el('feedbackModal').classList.remove('hidden');
+  if(BL.active&&!el('fbName').value)el('fbName').value=BL.active.name;
+  el('fbResult').classList.add('hidden');el('fbResult').innerHTML='';
+  setTimeout(function(){el('fbMessage').focus()},60);
+}
+function blCloseFeedback(){el('feedbackModal').classList.add('hidden')}
+function blFbMailto(cat,stars,name,email,msg){
+  var body='Category: '+cat+'\n'+(stars?('Rating: '+stars+'/5\n'):'')+(name?('Name: '+name+'\n'):'')+(email?('Contact email: '+email+'\n'):'')+'Profile: '+(BL.active?(BL.active.name+' ('+BL.active.role+')'):'Guest')+'\nApp: BookLens '+BL_APP_VERSION+'\n\n'+msg;
+  return 'mailto:info@iecincglobal.com?subject='+encodeURIComponent('BookLens feedback — '+cat)+'&body='+encodeURIComponent(body);
+}
+function blFbSubmit(){
+  var cat=el('fbCategory').value,name=el('fbName').value.trim(),email=el('fbEmail').value.trim(),msg=el('fbMessage').value.trim(),hp=el('fbWebsite').value;
+  var res=el('fbResult');
+  if(hp){res.classList.remove('hidden');res.innerHTML='<p><strong>Thank you — your feedback was sent to the IEC team.</strong></p>';return}
+  if(!msg){toast('Write a message first');return}
+  var btn=el('fbSubmit');btn.disabled=true;btn.textContent='Sending…';
+  var payload={category:cat,stars:blFbStars||null,name:name,email:email,message:msg,role:BL.active?BL.active.role:'guest',page:'BookLens app '+BL_APP_VERSION,website:''};
+  function fallback(){
+    btn.disabled=false;btn.textContent='Send feedback';
+    res.classList.remove('hidden');
+    res.innerHTML='<p>Online sending is not available right now.</p><p><a class="primary" style="display:inline-block;text-decoration:none" href="'+blFbMailto(cat,blFbStars,name,email,msg)+'">Open in your email app instead</a></p>';
+  }
+  fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    .then(function(r){return r.json().catch(function(){return{ok:false}}).then(function(j){return{status:r.status,j:j}})})
+    .then(function(x){
+      if(x.j&&x.j.ok){btn.disabled=false;btn.textContent='Send feedback';el('fbMessage').value='';res.classList.remove('hidden');res.innerHTML='<p><strong>Thank you — your feedback was sent to the IEC team.</strong></p>';}
+      else fallback();
+    }).catch(fallback);
+}
+/* ---- PWA install ---- */
+var blDeferredPrompt=null;
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();blDeferredPrompt=e;blShowInstall()});
+window.addEventListener('appinstalled',function(){blDeferredPrompt=null;var b=el('installBanner');if(b)b.classList.add('hidden');var i=el('installBtn');if(i)i.classList.add('hidden')});
+function blIsIOS(){return /iphone|ipad|ipod/i.test(navigator.userAgent||'')}
+function blShowInstall(){
+  var standalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone;
+  if(standalone)return;
+  var btn=el('installBtn');if(btn&&(blDeferredPrompt||blIsIOS()))btn.classList.remove('hidden');
+  var banner=el('installBanner');
+  if(banner&&(blDeferredPrompt||blIsIOS())&&!blLoad(BL_DISMISS_KEY,false))banner.classList.remove('hidden');
+  var hint=el('iosInstallHint');if(hint&&blIsIOS())hint.classList.remove('hidden');
+  var hint2=el('iosInstallHint2');if(hint2&&blIsIOS())hint2.classList.remove('hidden');
+}
+function blDoInstall(){
+  if(blDeferredPrompt){blDeferredPrompt.prompt();blDeferredPrompt.userChoice.then(function(){blDeferredPrompt=null;var b=el('installBanner');if(b)b.classList.add('hidden')});return}
+  var h=el('iosInstallHint2');if(h&&BL.active){h.classList.remove('hidden');h.scrollIntoView({behavior:'smooth',block:'center'})}
+  else{var b=el('installBanner');if(b){b.classList.remove('hidden');var hh=el('iosInstallHint');if(hh)hh.classList.remove('hidden');b.scrollIntoView({behavior:'smooth',block:'center'})}}
+  if(!blIsIOS())toast('Use your browser menu to install BookLens.');
+}
+/* ---- wiring ---- */
+el('portalSignInBtn').addEventListener('click',function(){blOpenProfileModal('in')});
+el('portalSignOutBtn').addEventListener('click',blSignOut);
+var _so2=el('portalSignOutBtn2');if(_so2)_so2.addEventListener('click',blSignOut);
+el('pfClose1').addEventListener('click',blCloseProfileModal);
+el('pfClose2').addEventListener('click',blCloseProfileModal);
+el('pfTabIn').addEventListener('click',function(){blPfTab('in')});
+el('pfTabNew').addEventListener('click',function(){blPfTab('new')});
+el('pcRole').addEventListener('change',function(){el('pcCodeRow').classList.toggle('hidden',this.value!=='mentor')});
+el('pfDoSignIn').addEventListener('click',function(){
+  var p=blProfileById(el('pfSelect').value),msg=el('pfMsg');
+  if(!p){msg.textContent='Create a profile first.';return}
+  blHash(p.salt+'::'+el('pfPass').value).then(function(h){
+    if(h===p.passHash){blSave(BL_SESSION_KEY,{profileId:p.id,ts:Date.now()});location.reload()}
+    else msg.textContent='Wrong password for '+p.name+'.';
+  });
+});
+el('pcDoCreate').addEventListener('click',function(){
+  var name=el('pcName').value.trim(),role=el('pcRole').value,pw=el('pcPass').value,msg=el('pcMsg');
+  if(!name){msg.textContent='Add your name.';return}
+  if(blNameTaken(name)){msg.textContent='A profile with that name already exists on this device.';return}
+  if(pw.length<4){msg.textContent='Password needs at least 4 characters.';return}
+  if(role==='mentor'&&el('pcCode').value.trim()!==BL_MENTOR_CODE){msg.textContent='That mentor code was not accepted. Ask IEC for the current code.';return}
+  var creator=(BL.active&&BL.active.role==='mentor')?BL.active.id:'self';
+  blMakeProfile(name,role,pw,creator).then(function(p){
+    toast('Profile created for '+p.name);
+    if(!BL.active){blSave(BL_SESSION_KEY,{profileId:p.id,ts:Date.now()});location.reload()}
+    else{blCloseProfileModal();blRenderConsole();blFillProfileSelect()}
+  });
+});
+el('cpBtn').addEventListener('click',function(){
+  if(!BL.active)return;var msg=el('cpMsg');
+  blHash(BL.active.salt+'::'+el('cpCurrent').value).then(function(h){
+    if(h!==BL.active.passHash){msg.textContent='Current password is wrong.';return}
+    var np=el('cpNew').value;if(np.length<4){msg.textContent='New password needs at least 4 characters.';return}
+    blHash(BL.active.salt+'::'+np).then(function(h2){
+      BL.active.passHash=h2;
+      for(var i=0;i<BL.profiles.length;i++)if(BL.profiles[i].id===BL.active.id)BL.profiles[i]=BL.active;
+      blSave(BL_PROFILES_KEY,BL.profiles);el('cpCurrent').value='';el('cpNew').value='';msg.textContent='Password changed on this device.';
+    });
+  });
+});
+el('mcCreateStudent').addEventListener('click',function(){
+  if(!BL.active||BL.active.role!=='mentor')return;
+  var name=el('mcStuName').value.trim(),pw=el('mcStuPass').value,msg=el('mcCreateMsg');
+  if(!name){msg.textContent='Add the student name.';return}
+  if(blNameTaken(name)){msg.textContent='That name already has a profile on this device.';return}
+  if(pw.length<4){msg.textContent='Password needs at least 4 characters.';return}
+  blMakeProfile(name,'student',pw,BL.active.id).then(function(){
+    el('mcStuName').value='';el('mcStuPass').value='';msg.textContent='Student profile created for '+name+'.';
+    blRenderMyStudents();
+  });
+});
+el('mcAssignBtn').addEventListener('click',function(){
+  if(!BL.active||BL.active.role!=='mentor')return;
+  var sid=el('mcAssignStudent').value,title=el('mcAssignTitle').value.trim(),msg=el('mcAssignMsg');
+  if(!sid){msg.textContent='Create a student profile first.';return}
+  if(!title){msg.textContent='Add a title.';return}
+  BL.assignments.unshift({id:blUid('a'),to:sid,from:BL.active.id,title:title,subject:currentSubject,instructions:el('mcAssignNote').value.trim(),due:el('mcAssignDue').value||'',status:'assigned',createdAt:Date.now()});
+  blSave(BL_ASSIGN_KEY,BL.assignments);
+  el('mcAssignTitle').value='';el('mcAssignNote').value='';msg.textContent='Assigned.';
+  blRenderMcAssignments();toast('Assignment saved for this device');
+});
+el('studentAssignments').addEventListener('click',function(e){
+  var b=e.target&&e.target.closest?e.target.closest('.bl-done'):null;if(!b)return;
+  var id=b.getAttribute('data-aid');
+  for(var i=0;i<BL.assignments.length;i++)if(BL.assignments[i].id===id)BL.assignments[i].status='done';
+  blSave(BL_ASSIGN_KEY,BL.assignments);blRenderStudentAssignments();toast('Marked done');
+});
+el('continueList').addEventListener('click',function(e){
+  var b=e.target&&e.target.closest?e.target.closest('.bl-continue'):null;if(!b)return;
+  openBook(b.getAttribute('data-id'));
+});
+document.querySelectorAll('#portalHome [data-goto]').forEach(function(b){b.addEventListener('click',function(){var id=b.getAttribute('data-goto');if(id==='assignments'&&typeof setAppMode==='function')setAppMode('study');var t=el(id);if(t)t.scrollIntoView({behavior:'smooth',block:'start'})})});
+el('feedbackOpenBtn').addEventListener('click',blOpenFeedback);
+var _fb2=el('feedbackOpenBtn2');if(_fb2)_fb2.addEventListener('click',blOpenFeedback);
+el('fbClose').addEventListener('click',blCloseFeedback);
+el('fbSubmit').addEventListener('click',blFbSubmit);
+el('fbStars').addEventListener('click',function(e){
+  var b=e.target&&e.target.closest?e.target.closest('.fb-star'):null;if(!b)return;
+  blFbStars=parseInt(b.getAttribute('data-v'),10)||0;
+  Array.prototype.forEach.call(el('fbStars').querySelectorAll('.fb-star'),function(s){s.classList.toggle('on',parseInt(s.getAttribute('data-v'),10)<=blFbStars)});
+});
+var _ib=el('installBtn');if(_ib)_ib.addEventListener('click',blDoInstall);
+var _ibb=el('installBannerBtn');if(_ibb)_ibb.addEventListener('click',blDoInstall);
+var _ibx=el('installBannerX');if(_ibx)_ibx.addEventListener('click',function(){blSave(BL_DISMISS_KEY,true);el('installBanner').classList.add('hidden')});
+blRenderChrome();
+blRenderStudentAssignments();
+blShowInstall();
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})});}
+/* ============== end BookLens Portal ============== */
+renderLibrary();refreshTtsVoices();setAppMode('narration');renderReader();renderRoster();renderAssignments();renderReadingPicker();setAudio(true);switchRole('student');renderLibrary();refreshTtsVoices();setAppMode('narration');renderReader();renderRoster();renderAssignments();renderReadingPicker();setAudio(true);switchRole('student');
   })();
   </script>
 </body>
