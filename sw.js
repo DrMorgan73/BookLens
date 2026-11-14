@@ -3,7 +3,7 @@
    Never caches /api/ responses or any user data (profiles and books live in
    localStorage on the device and are never touched by this worker).
    Bump SHELL_VERSION on each release so old shells are cleaned up. */
-var SHELL_VERSION = 'v1';
+var SHELL_VERSION = 'v2';
 var CACHE = 'booklens-shell-' + SHELL_VERSION;
 var SHELL = [
   '/',

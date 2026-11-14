@@ -251,6 +251,8 @@ mark.hl-blue{background:rgba(100,170,255,.42)}
           <div class="field"><label for="cpCurrent">Current password</label><input id="cpCurrent" type="password" autocomplete="current-password"></div>
           <div class="field"><label for="cpNew">New password</label><input id="cpNew" type="password" autocomplete="new-password"></div>
           <div class="form-actions"><button class="secondary" id="cpBtn" type="button">Change password</button><button class="secondary" id="portalSignOutBtn2" type="button">Sign out</button><span class="session-note" id="cpMsg"></span></div>
+          <div class="field"><label for="rpPhrase">Recovery phrase</label><input id="rpPhrase" type="text" autocomplete="off" placeholder="A few words only you would know"><p class="session-note" id="rpState"></p></div>
+          <div class="form-actions"><button class="secondary" id="rpBtn" type="button">Set recovery phrase</button><span class="session-note" id="rpMsg"></span></div>
         </details>
       </section>
       <section class="section" id="librarySection"><div class="section-head"><div><h2>My Library</h2><p>All your books, grouped by subject. Tap any book to open it instantly.</p></div></div><div id="libraryGroups"></div></section>
@@ -337,13 +339,22 @@ mark.hl-blue{background:rgba(100,170,255,.42)}
       <div id="pfSignInPane">
         <div class="field"><label for="pfSelect">Profile on this device</label><select id="pfSelect"></select></div>
         <div class="field"><label for="pfPass">Password</label><input id="pfPass" type="password" autocomplete="current-password"></div>
-        <div class="form-actions"><button class="primary" id="pfDoSignIn" type="button">Sign in</button><button class="secondary" id="pfClose1" type="button">Cancel</button><span class="session-note" id="pfMsg"></span></div>
+        <div class="form-actions"><button class="primary" id="pfDoSignIn" type="button">Sign in</button><button class="secondary" id="pfClose1" type="button">Cancel</button><button class="secondary" id="pfForgot" type="button">Forgot password?</button><span class="session-note" id="pfMsg"></span></div>
+        <div id="pfResetPane" class="hidden">
+          <h3>Reset your password on this device</h3>
+          <p>Enter the recovery phrase you set when you created the profile. If it matches, you can choose a new password — your books, highlights and flashcards stay exactly as they are.</p>
+          <div class="field"><label for="prSelect">Profile on this device</label><select id="prSelect"></select></div>
+          <div class="field"><label for="prPhrase">Recovery phrase</label><input id="prPhrase" type="text" autocomplete="off" placeholder="The phrase you set at sign-up"></div>
+          <div class="field"><label for="prNew">New password (4+ characters)</label><input id="prNew" type="password" autocomplete="new-password"></div>
+          <div class="form-actions"><button class="primary" id="prDoReset" type="button">Reset password</button><span class="session-note" id="prMsg"></span></div>
+        </div>
       </div>
       <div id="pfCreatePane" class="hidden">
         <div class="field"><label for="pcName">Your name</label><input id="pcName" type="text" autocomplete="name"></div>
         <div class="field"><label for="pcRole">I am a</label><select id="pcRole"><option value="student">Student</option><option value="mentor">Mentor</option></select></div>
         <div class="field hidden" id="pcCodeRow"><label for="pcCode">IEC mentor code</label><input id="pcCode" type="text" autocomplete="off" placeholder="Ask IEC for the mentor code"></div>
         <div class="field"><label for="pcPass">Password (4+ characters)</label><input id="pcPass" type="password" autocomplete="new-password"></div>
+        <div class="field"><label for="pcPhrase">Recovery phrase</label><input id="pcPhrase" type="text" autocomplete="off" placeholder="e.g. blue river seven"><p class="session-note">A few words only you would know — used to reset your password on this device if you forget it.</p></div>
         <div class="form-actions"><button class="primary" id="pcDoCreate" type="button">Create profile</button><button class="secondary" id="pfClose2" type="button">Cancel</button><span class="session-note" id="pcMsg"></span></div>
       </div>
     </div>
@@ -535,7 +546,7 @@ fcRender();
    Profiles, libraries, highlights, flashcards, progress and assignments are stored
    per profile in localStorage on this device only. Guest mode is unchanged. */
 var BL_MENTOR_CODE='IEC-MENTOR-2026'; /* IEC OFFICE: the mentor code. Change this value to rotate mentor access. */
-var BL_APP_VERSION='1.4.0';
+var BL_APP_VERSION='1.5.0';
 var BL_PROFILES_KEY='booklens_profiles_v1',BL_SESSION_KEY='booklens_session_v1',BL_ASSIGN_KEY='booklens_assignments_v1',BL_PROGRESS_BASE='booklens_progress_v1',BL_DISMISS_KEY='booklens_install_dismissed';
 var BL={active:null,profiles:[],assignments:[]};
 function blLoad(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
@@ -557,11 +568,17 @@ function blHash(str){
   var h1=0xdeadbeef,h2=0x41c6ce57,s=str+'::booklens';for(var i=0;i<s.length;i++){var ch=s.charCodeAt(i);h1=Math.imul(h1^ch,2654435761);h2=Math.imul(h2^ch,1597334677)}h1=(h1^(h1>>>16))>>>0;h2=(h2^(h2>>>16))>>>0;
   return Promise.resolve(('0000000'+h1.toString(16)).slice(-8)+('0000000'+h2.toString(16)).slice(-8));
 }
-function blMakeProfile(name,role,password,createdBy){
-  var salt=blUid('s');
+function blNormalizePhrase(s){return (s||'').trim().toLowerCase().replace(/\s+/g,' ')}
+function blMakeProfile(name,role,password,createdBy,phrase){
+  var salt=blUid('s'),np=blNormalizePhrase(phrase);
   return blHash(salt+'::'+password).then(function(hash){
-    var p={id:blUid('u'),name:name,role:role,salt:salt,passHash:hash,createdBy:createdBy||'self',createdAt:Date.now()};
-    BL.profiles.push(p);blSave(BL_PROFILES_KEY,BL.profiles);return p;
+    var done=function(phraseSalt,phraseHash){
+      var p={id:blUid('u'),name:name,role:role,salt:salt,passHash:hash,phraseSalt:phraseSalt||null,phraseHash:phraseHash||null,createdBy:createdBy||'self',createdAt:Date.now()};
+      BL.profiles.push(p);blSave(BL_PROFILES_KEY,BL.profiles);return p;
+    };
+    if(!np)return done(null,null);
+    var psalt=blUid('s');
+    return blHash(psalt+'::phrase::'+np).then(function(ph){return done(psalt,ph)});
   });
 }
 function blProfileById(id){for(var i=0;i<BL.profiles.length;i++)if(BL.profiles[i].id===id)return BL.profiles[i];return null}
@@ -630,7 +647,7 @@ function blRenderChrome(){
     who.textContent='👤 '+BL.active.name+' · '+(BL.active.role==='mentor'?'Mentor':'Student');
     who.classList.remove('hidden');si.classList.add('hidden');so.classList.remove('hidden');
     home.classList.remove('hidden');el('portalGreeting').textContent='Welcome, '+BL.active.name;
-    blRenderContinue();
+    blRenderContinue();blRenderPhraseState();
   }else{
     who.classList.add('hidden');si.classList.remove('hidden');so.classList.add('hidden');home.classList.add('hidden');
   }
@@ -639,6 +656,7 @@ function blRenderChrome(){
 function blSignOut(){try{localStorage.removeItem(BL_SESSION_KEY)}catch(e){}location.reload()}
 function blOpenProfileModal(tab){
   var m=el('profileModal');m.classList.remove('hidden');blPfTab(tab||'in');blFillProfileSelect();
+  var rp=el('pfResetPane');if(rp)rp.classList.add('hidden');var rm=el('prMsg');if(rm)rm.textContent='';
   setTimeout(function(){var f=el(tab==='new'?'pcName':'pfPass');if(f)f.focus()},60);
 }
 function blCloseProfileModal(){el('profileModal').classList.add('hidden')}
@@ -650,7 +668,15 @@ function blPfTab(tab){
 }
 function blFillProfileSelect(){
   var sel=el('pfSelect');if(!sel)return;
-  sel.innerHTML=BL.profiles.length?BL.profiles.map(function(p){return '<option value="'+p.id+'">'+esc(p.name)+' ('+(p.role==='mentor'?'Mentor':'Student')+')</option>'}).join(''):'<option value="">No profiles on this device yet</option>';
+  var html=BL.profiles.length?BL.profiles.map(function(p){return '<option value="'+p.id+'">'+esc(p.name)+' ('+(p.role==='mentor'?'Mentor':'Student')+')</option>'}).join(''):'<option value="">No profiles on this device yet</option>';
+  sel.innerHTML=html;
+  var rs=el('prSelect');if(rs)rs.innerHTML=html;
+}
+function blRenderPhraseState(){
+  var st=el('rpState'),btn=el('rpBtn');if(!st||!btn)return;
+  if(!BL.active){st.textContent='';return}
+  if(BL.active.phraseHash){st.textContent='A recovery phrase is set for this profile. To change it, type your current password above, then a new phrase.';btn.textContent='Change recovery phrase'}
+  else{st.textContent='No recovery phrase is set yet — without one, a forgotten password cannot be reset. Type your current password above, then set a phrase.';btn.textContent='Set recovery phrase'}
 }
 /* ---- feedback ---- */
 var blFbStars=0;
@@ -722,16 +748,61 @@ el('pfDoSignIn').addEventListener('click',function(){
   });
 });
 el('pcDoCreate').addEventListener('click',function(){
-  var name=el('pcName').value.trim(),role=el('pcRole').value,pw=el('pcPass').value,msg=el('pcMsg');
+  var name=el('pcName').value.trim(),role=el('pcRole').value,pw=el('pcPass').value,phrase=el('pcPhrase').value,msg=el('pcMsg');
   if(!name){msg.textContent='Add your name.';return}
   if(blNameTaken(name)){msg.textContent='A profile with that name already exists on this device.';return}
   if(pw.length<4){msg.textContent='Password needs at least 4 characters.';return}
+  if(!blNormalizePhrase(phrase)){msg.textContent='Add a recovery phrase — a few words only you would know, in case you forget your password.';return}
   if(role==='mentor'&&el('pcCode').value.trim()!==BL_MENTOR_CODE){msg.textContent='That mentor code was not accepted. Ask IEC for the current code.';return}
   var creator=(BL.active&&BL.active.role==='mentor')?BL.active.id:'self';
-  blMakeProfile(name,role,pw,creator).then(function(p){
+  blMakeProfile(name,role,pw,creator,phrase).then(function(p){
+    el('pcPhrase').value='';
     toast('Profile created for '+p.name);
     if(!BL.active){blSave(BL_SESSION_KEY,{profileId:p.id,ts:Date.now()});location.reload()}
     else{blCloseProfileModal();blRenderConsole();blFillProfileSelect()}
+  });
+});
+el('pfForgot').addEventListener('click',function(){
+  var pane=el('pfResetPane');pane.classList.remove('hidden');
+  var sel=el('prSelect'),cur=el('pfSelect').value;if(cur)sel.value=cur;
+  el('prMsg').textContent='';
+  setTimeout(function(){el('prPhrase').focus()},60);
+});
+el('prDoReset').addEventListener('click',function(){
+  var p=blProfileById(el('prSelect').value),msg=el('prMsg');
+  if(!p){msg.textContent='Create a profile first.';return}
+  if(!p.phraseHash){msg.textContent=p.name+' has no recovery phrase set, so this password cannot be reset. If you can still sign in, open Account on this device and set a recovery phrase.';return}
+  var phrase=blNormalizePhrase(el('prPhrase').value);
+  if(!phrase){msg.textContent='Enter the recovery phrase for '+p.name+'.';return}
+  var np=el('prNew').value;
+  if(np.length<4){msg.textContent='New password needs at least 4 characters.';return}
+  blHash((p.phraseSalt||p.salt)+'::phrase::'+phrase).then(function(h){
+    if(h!==p.phraseHash){msg.textContent='That recovery phrase does not match. The password was not changed.';return}
+    p.salt=blUid('s');
+    blHash(p.salt+'::'+np).then(function(h2){
+      p.passHash=h2;blSave(BL_PROFILES_KEY,BL.profiles);
+      el('prPhrase').value='';el('prNew').value='';
+      el('pfSelect').value=p.id;el('pfPass').value='';
+      msg.textContent='Password reset for '+p.name+'. Sign in above with the new password.';
+      el('pfMsg').textContent='Password was reset — use the new password.';
+      toast('Password reset for '+p.name);
+    });
+  });
+});
+el('rpBtn').addEventListener('click',function(){
+  if(!BL.active)return;var msg=el('rpMsg');
+  blHash(BL.active.salt+'::'+el('cpCurrent').value).then(function(h){
+    if(h!==BL.active.passHash){msg.textContent='Current password is wrong — enter it in the Current password field above first.';return}
+    var np=blNormalizePhrase(el('rpPhrase').value);
+    if(!np){msg.textContent='Type a recovery phrase — a few words only you would know.';return}
+    var ps=blUid('s');
+    blHash(ps+'::phrase::'+np).then(function(ph){
+      BL.active.phraseSalt=ps;BL.active.phraseHash=ph;
+      for(var i=0;i<BL.profiles.length;i++)if(BL.profiles[i].id===BL.active.id)BL.profiles[i]=BL.active;
+      blSave(BL_PROFILES_KEY,BL.profiles);
+      el('rpPhrase').value='';msg.textContent='Recovery phrase saved on this device.';
+      blRenderPhraseState();toast('Recovery phrase saved');
+    });
   });
 });
 el('cpBtn').addEventListener('click',function(){
