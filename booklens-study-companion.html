@@ -545,7 +545,9 @@ fcRender();
 /* ============== BookLens Portal (IEC) — local profiles on this device, no server ==============
    Profiles, libraries, highlights, flashcards, progress and assignments are stored
    per profile in localStorage on this device only. Guest mode is unchanged. */
-var BL_MENTOR_CODE='IEC-MENTOR-2026'; /* IEC OFFICE: the mentor code. Change this value to rotate mentor access. */
+/* Mentor access is verified server-side by /api/mentor-check against the
+   BL_MENTOR_CODE env var on the Vercel project. The code itself is never
+   shipped with this page. To rotate mentor access, change the env var. */
 var BL_APP_VERSION='1.5.0';
 var BL_PROFILES_KEY='booklens_profiles_v1',BL_SESSION_KEY='booklens_session_v1',BL_ASSIGN_KEY='booklens_assignments_v1',BL_PROGRESS_BASE='booklens_progress_v1',BL_DISMISS_KEY='booklens_install_dismissed';
 var BL={active:null,profiles:[],assignments:[]};
@@ -748,19 +750,35 @@ el('pfDoSignIn').addEventListener('click',function(){
   });
 });
 el('pcDoCreate').addEventListener('click',function(){
-  var name=el('pcName').value.trim(),role=el('pcRole').value,pw=el('pcPass').value,phrase=el('pcPhrase').value,msg=el('pcMsg');
+  var name=el('pcName').value.trim(),role=el('pcRole').value,pw=el('pcPass').value,phrase=el('pcPhrase').value,msg=el('pcMsg'),btn=el('pcDoCreate');
   if(!name){msg.textContent='Add your name.';return}
   if(blNameTaken(name)){msg.textContent='A profile with that name already exists on this device.';return}
   if(pw.length<4){msg.textContent='Password needs at least 4 characters.';return}
   if(!blNormalizePhrase(phrase)){msg.textContent='Add a recovery phrase — a few words only you would know, in case you forget your password.';return}
-  if(role==='mentor'&&el('pcCode').value.trim()!==BL_MENTOR_CODE){msg.textContent='That mentor code was not accepted. Ask IEC for the current code.';return}
-  var creator=(BL.active&&BL.active.role==='mentor')?BL.active.id:'self';
-  blMakeProfile(name,role,pw,creator,phrase).then(function(p){
-    el('pcPhrase').value='';
-    toast('Profile created for '+p.name);
-    if(!BL.active){blSave(BL_SESSION_KEY,{profileId:p.id,ts:Date.now()});location.reload()}
-    else{blCloseProfileModal();blRenderConsole();blFillProfileSelect()}
-  });
+  var finishCreate=function(){
+    var creator=(BL.active&&BL.active.role==='mentor')?BL.active.id:'self';
+    blMakeProfile(name,role,pw,creator,phrase).then(function(p){
+      el('pcPhrase').value='';
+      toast('Profile created for '+p.name);
+      if(!BL.active){blSave(BL_SESSION_KEY,{profileId:p.id,ts:Date.now()});location.reload()}
+      else{blCloseProfileModal();blRenderConsole();blFillProfileSelect()}
+    });
+  };
+  if(role!=='mentor'){finishCreate();return}
+  /* Mentor codes are checked on the server (see /api/mentor-check) — the
+     code is never part of this page. The server answers only yes or no. */
+  btn.disabled=true;msg.textContent='Checking the mentor code…';
+  fetch('/api/mentor-check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:el('pcCode').value.trim()})})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      btn.disabled=false;
+      if(d&&d.ok){msg.textContent='';finishCreate()}
+      else msg.textContent='That mentor code was not accepted. Ask IEC for the current code.';
+    })
+    .catch(function(){
+      btn.disabled=false;
+      msg.textContent='Could not verify the mentor code just now. Check your connection and try again.';
+    });
 });
 el('pfForgot').addEventListener('click',function(){
   var pane=el('pfResetPane');pane.classList.remove('hidden');
